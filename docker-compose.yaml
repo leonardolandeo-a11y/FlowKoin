@@ -1,0 +1,38 @@
+
+name: flowkoin
+
+services:
+  postgres:
+    image: postgres:17
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?required}
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    profiles: ["app"]
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8080"
+
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
